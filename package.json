@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "eslint": "^9.31.0"
+  },
+  "name": "bot-discord-vagas",
+  "version": "1.0.0",
+  "description": "Bot para Discord que busca e publica vagas de emprego com base em palavras-chave.",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BryanWalace/bot-discord-vagas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BryanWalace/bot-discord-vagas/issues"
+  },
+  "homepage": "https://github.com/BryanWalace/bot-discord-vagas#readme"
+}
