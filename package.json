@@ -5,7 +5,10 @@
     "discord.js": "^14.21.0",
     "dotenv": "^17.2.0",
     "eslint": "^9.31.0",
-    "puppeteer": "^24.12.1"
+    "node-cron": "^4.2.1",
+    "puppeteer": "^24.12.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
   "name": "bot-discord-vagas",
   "version": "1.0.0",

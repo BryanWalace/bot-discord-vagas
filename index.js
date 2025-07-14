@@ -1,43 +1,71 @@
-const { Client, GatewayIntentBits, Events } = require('discord.js');
-
+const fs = require('node:fs');
+const path = require('node:path');
+const { Client, GatewayIntentBits, Events, Collection } = require('discord.js');
 require('dotenv').config();
 
 const TOKEN = process.env.DISCORD_TOKEN;
-
-const PREFIX = '!';
+const PREFIX = '!'; // Prefix para os comandos do bot
 
 const client = new Client({
-    
     intents: [
-        GatewayIntentBits.Guilds,          // Necessário para interagir com servidores (guilds)
-        GatewayIntentBits.GuildMessages,   // Necessário para receber mensagens em servidores
-        GatewayIntentBits.MessageContent,  // Necessário para LER o conteúdo das mensagens
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
     ]
 });
 
+client.commands = new Collection();
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-client.once(Events.ClientReady, () => {
-    console.log('------------------------------------');
-    console.log(`✅ Bot pronto! Logado como ${client.user.tag}`);
-    console.log('------------------------------------');
-});
+for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath); 
+    const commandName = path.parse(file).name.toLowerCase(); 
+    if ('execute' in command) {
+        client.commands.set(commandName, command);
+        console.log(`[Comando Carregado]: ${commandName}`);
+    } else {
+        console.log(`[AVISO] O comando em ${filePath} não tem a propriedade "execute".`);
+    }
+}
 
-// Este evento é disparado toda vez que uma nova mensagem é criada em um canal
+// Carregamos os eventos do bot
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args, client));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args, client));
+	}
+    console.log(`[Evento Carregado]: ${event.name}`);
+}
+
+// Configuração do scheduler
 client.on(Events.MessageCreate, async (message) => {
-    // Etapa 1: Ignorar mensagens que não são para o bot
-    // Se a mensagem for de outro bot ou não começar com o prefixo, não faz nada
-    if (message.author.bot || !message.content.startsWith(PREFIX)) {
-        return;
-    }
+    if (message.author.bot || !message.content.startsWith(PREFIX)) return;
+    
+    try { await message.delete(); } catch (e) { console.warn("Permissão 'Gerenciar Mensagens' ausente."); }
 
-    // Remove o prefixo e divide a mensagem em "comando" e "argumentos"
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
-    const command = args.shift().toLowerCase();
+    const commandName = args.shift().toLowerCase();
 
-    // Etapa 3: Lógica de Comandos
-    if (command === 'ping') {
-        await message.reply('Pong! 🏓');
+    // Verifica se o comando é 'vagas', 'vagas day' ou 'vagasall'
+    if (commandName === 'vagas') {
+        const command = args[0] === 'day' ? client.commands.get('vagasday') : client.commands.get('vagassearch');
+        if (command) await command.execute(message, args, client);
+    } else if (commandName === 'vagasall') {
+        const command = client.commands.get('vagassearch');
+        if (command) await command.execute(message, args, { client, limit: null });
+    } else {
+        const command = client.commands.get(commandName);
+        if (command) await command.execute(message, args, client);
     }
 });
+
 
 client.login(TOKEN);
