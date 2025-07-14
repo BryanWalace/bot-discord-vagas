@@ -73,6 +73,7 @@ Após a instalação e configuração, inicie o bot com o seguinte comando no te
 
 ```bash
 node index.js
+```
 
 Se tudo estiver correto, você verá a mensagem:
 
